@@ -10,27 +10,34 @@ export function CustomCursor() {
   const [position, setPosition] = useState({ x: -100, y: -100 });
   const [mounted, setMounted] = useState(false);
   const [isHoveringImage, setIsHoveringImage] = useState(false);
+  const [isHoveringButton, setIsHoveringButton] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
     const moveCursor = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       
-      // Check if hovering over an image
       const target = e.target as HTMLElement;
       setIsHoveringImage(
         target.tagName === 'IMG' || 
         target.closest('[data-image-container="true"]') !== null
       );
+      setIsHoveringButton(
+        target.tagName === 'BUTTON' ||
+        target.closest('button') !== null
+      );
     };
 
-    window.addEventListener('mousemove', moveCursor);
-    return () => {
-      window.removeEventListener('mousemove', moveCursor);
-    };
-  }, []);
+    if (!isTouchDevice) {
+      window.addEventListener('mousemove', moveCursor);
+      return () => window.removeEventListener('mousemove', moveCursor);
+    }
+  }, [isTouchDevice]);
 
-  if (!mounted) return null;
+  if (!mounted || isTouchDevice) return null;
 
   const cursorStyles = {
     position: 'fixed',
@@ -41,9 +48,10 @@ export function CustomCursor() {
     transform: 'translate(-50%, -50%)',
     willChange: 'transform',
     mixBlendMode: isHoveringImage ? 'difference' : 'normal',
+    opacity: isHoveringButton ? 0.2 : 1,
+    transition: 'opacity 0.2s ease-out',
   } as const;
 
-  // Use forced theme if available, otherwise use the regular theme
   const effectiveTheme = forceTheme || theme;
   const cursorColor = isHoveringImage ? '#FFFFFF' : (effectiveTheme === 'dark' ? '#FFFFFF' : '#000000');
 

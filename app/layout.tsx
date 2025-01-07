@@ -12,8 +12,8 @@ const didactGothic = Didact_Gothic({
 });
 
 export const metadata = {
-  title: 'AI Art Gallery',
-  description: 'A collection of AI-generated artwork',
+  title: 'Grainview',
+  description: 'Inspired by the grain of film.',
 };
 
 export default function RootLayout({

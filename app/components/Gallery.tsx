@@ -7,6 +7,7 @@ import { ImageModal } from './ImageModal';
 import { CustomCursor } from './CustomCursor';
 import { useState, useMemo, useEffect } from 'react';
 import { HiOutlineDownload, HiOutlineClipboard, HiOutlineCheck } from 'react-icons/hi';
+import { SmoothScroll } from './SmoothScroll';
 
 type ArtPiece = {
   id: number;
@@ -22,7 +23,7 @@ const artPieces: ArtPiece[] = [
   { id: 3, title: "GREEN ROOM", src: "/images/green-room.png" },
   { id: 4, title: "GROCER", src: "/images/grocery.png" },
   { id: 5, title: "TRECK", src: "/images/deep-snow.png" },
-  { id: 6, title: "DUSK TRAINING", src: "/images/samurai.png" },
+  { id: 6, title: "CORPORATE", src: "/images/corporate-b.png" },
   { id: 7, title: "CONDEMNED", src: "/images/crow.png" },
   { id: 8, title: "ARRIVAL", src: "/images/airport.png" },
   { id: 9, title: "PORCELAIN", src: "/images/porcelain-mask.png" },
@@ -34,6 +35,9 @@ const artPieces: ArtPiece[] = [
   { id: 15, title: "HAZED OUT", src: "/images/balcony-pink.png" },
   { id: 16, title: "PASSAGE", src: "/images/cloak-blue.png" },
   { id: 17, title: "VACANT", src: "/images/hallway.png" },
+  { id: 18, title: "CHROME NIGHT", src: "/images/chrome-night.png" },
+  { id: 19, title: "DUSK TRAINING", src: "/images/samurai.png" },
+  { id: 20, title: "PROTOCOL", src: "/images/proto.png" },
 ];
 
 export function Gallery() {
@@ -41,6 +45,11 @@ export function Gallery() {
   const [selectedRatio, setSelectedRatio] = useState<AspectRatio>('all');
   const [imageRatios, setImageRatios] = useState<Record<number, AspectRatio>>({});
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   const detectAspectRatio = (width: number, height: number): AspectRatio => {
     const ratio = width / height;
@@ -105,16 +114,17 @@ export function Gallery() {
 
   return (
     <>
+      <SmoothScroll />
       <style jsx global>{`
         * {
-          cursor: none !important;
+          cursor: ${isTouchDevice ? 'auto' : 'none !important'};
         }
       `}</style>
       
-      <CustomCursor />
+      {!isTouchDevice && <CustomCursor />}
 
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="flex justify-between items-center mb-12 mt-16">
+        <header className="flex justify-between items-center mb-8 mt-16">
           <div className="flex flex-col gap-2">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -140,29 +150,33 @@ export function Gallery() {
               FILM-INSPIRED SHOTS, STABELY DIFFUSED AND CURATED TO REALITY.
             </motion.h2>
           </div>
-          <ThemeToggle />
         </header>
-        
-        <motion.div 
-          className="flex gap-8 mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
-        >
-          {(['all', '1:1', '4:3', '16:9'] as AspectRatio[]).map((ratio) => (
-            <button
-              key={ratio}
-              onClick={() => setSelectedRatio(ratio)}
-              className={`text-md font-bold transition-opacity duration-300
-                ${selectedRatio === ratio 
-                  ? 'text-light-text dark:text-dark-text opacity-100' 
-                  : 'text-light-text/40 dark:text-dark-text/40 hover:opacity-75'
-                }`}
+
+        <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 mb-12">
+          <div className="backdrop-blur-md bg-light-bg/90 dark:bg-dark-bg/90 px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center">
+            <motion.div 
+              className="flex gap-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
             >
-              {ratio === 'all' ? 'ALL' : ratio.toUpperCase()}
-            </button>
-          ))}
-        </motion.div>
+              {(['all', '1:1', '4:3', '16:9'] as AspectRatio[]).map((ratio) => (
+                <button
+                  key={ratio}
+                  onClick={() => setSelectedRatio(ratio)}
+                  className={`text-md font-bold transition-opacity duration-300
+                    ${selectedRatio === ratio 
+                      ? 'text-light-text dark:text-dark-text opacity-100' 
+                      : 'text-light-text/40 dark:text-dark-text/40 hover:opacity-75'
+                    }`}
+                >
+                  {ratio === 'all' ? 'ALL' : ratio.toUpperCase()}
+                </button>
+              ))}
+            </motion.div>
+            <ThemeToggle />
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 gap-24 mb-24">
           {filteredPieces.map((piece, index) => (
@@ -181,7 +195,10 @@ export function Gallery() {
               <motion.div 
                 className="aspect-[16/9] relative overflow-hidden rounded-lg cursor-pointer"
                 whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
+                transition={{ 
+                  duration: 1.2,
+                  ease: [0.33, 1, 0.68, 1]
+                }}
                 onClick={() => setSelectedImage(piece)}
                 data-image-container="true"
               >
@@ -189,7 +206,7 @@ export function Gallery() {
                   src={piece.src}
                   alt={piece.title}
                   fill
-                  className="object-cover transition-transform duration-500 hover:scale-105"
+                  className="object-cover transition-all duration-[1.2s] ease-[cubic-bezier(0.33,1,0.68,1)] hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
                   onLoad={(e) => handleImageLoad(piece.id, e.currentTarget)}
                 />
