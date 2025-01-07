@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { ImageModal } from './ImageModal';
 import { CustomCursor } from './CustomCursor';
 import { useState, useMemo, useEffect } from 'react';
-import { HiOutlineDownload, HiOutlineClipboard } from 'react-icons/hi';
+import { HiOutlineDownload, HiOutlineClipboard, HiOutlineCheck } from 'react-icons/hi';
 
 type ArtPiece = {
   id: number;
@@ -40,6 +40,7 @@ export function Gallery() {
   const [selectedImage, setSelectedImage] = useState<ArtPiece | null>(null);
   const [selectedRatio, setSelectedRatio] = useState<AspectRatio>('all');
   const [imageRatios, setImageRatios] = useState<Record<number, AspectRatio>>({});
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const detectAspectRatio = (width: number, height: number): AspectRatio => {
     const ratio = width / height;
@@ -95,6 +96,8 @@ export function Gallery() {
           [blob.type]: blob
         })
       ]);
+      setCopiedId(piece.id);
+      setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
       console.error('Error copying image:', error);
     }
@@ -188,7 +191,7 @@ export function Gallery() {
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
-                  onLoadingComplete={(img) => handleImageLoad(piece.id, img)}
+                  onLoad={(e) => handleImageLoad(piece.id, e.currentTarget)}
                 />
               </motion.div>
               <div className="flex items-center justify-between mt-6">
@@ -224,7 +227,16 @@ export function Gallery() {
                     className="p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors"
                     aria-label="Copy image"
                   >
-                    <HiOutlineClipboard size={20} />
+                    <motion.div
+                      animate={{ scale: copiedId === piece.id ? [1, 1.2, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {copiedId === piece.id ? (
+                        <HiOutlineCheck size={20} className="text-green-500" />
+                      ) : (
+                        <HiOutlineClipboard size={20} />
+                      )}
+                    </motion.div>
                   </button>
                   <button
                     onClick={(e) => {
