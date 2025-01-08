@@ -18,7 +18,7 @@ type ArtPiece = {
 type AspectRatio = 'all' | '1:1' | '4:3' | '16:9';
 
 const artPieces: ArtPiece[] = [
-  { id: 1, title: "FLEETING", src: "/images/fleeting.png" },
+  { id: 1, title: "FLEETING", src: "/images/fleeting-f.png" },
   { id: 2, title: "HOUSE FIRE", src: "/images/house-fire.png" },
   { id: 3, title: "GREEN ROOM", src: "/images/green-room.png" },
   { id: 4, title: "GROCER", src: "/images/grocery.png" },
@@ -26,18 +26,19 @@ const artPieces: ArtPiece[] = [
   { id: 6, title: "CORPORATE", src: "/images/corporate-b.png" },
   { id: 7, title: "CONDEMNED", src: "/images/crow.png" },
   { id: 8, title: "ARRIVAL", src: "/images/airport.png" },
-  { id: 9, title: "PORCELAIN", src: "/images/porcelain-mask.png" },
-  { id: 10, title: "FOYER", src: "/images/foyer.png" },
-  { id: 11, title: "SUBURBAN", src: "/images/suburb.png" },
-  { id: 12, title: "THE PLOT", src: "/images/subjects-face.png" },
-  { id: 13, title: "DEEP", src: "/images/shark.png" },
-  { id: 14, title: "EMBANKED", src: "/images/suv-snow.png" },
-  { id: 15, title: "HAZED OUT", src: "/images/balcony-pink.png" },
-  { id: 16, title: "PASSAGE", src: "/images/cloak-blue.png" },
-  { id: 17, title: "VACANT", src: "/images/hallway.png" },
-  { id: 18, title: "CHROME NIGHT", src: "/images/chrome-night.png" },
-  { id: 19, title: "DUSK TRAINING", src: "/images/samurai.png" },
-  { id: 20, title: "PROTOCOL", src: "/images/proto.png" },
+  { id: 9, title: "FOYER", src: "/images/foyer.png" },
+  { id: 10, title: "SUBURBAN", src: "/images/suburb.png" },
+  { id: 11, title: "THE PLOT", src: "/images/subjects-face.png" },
+  { id: 12, title: "DEEP", src: "/images/shark.png" },
+  { id: 13, title: "EMBANKED", src: "/images/suv-snow.png" },
+  { id: 14, title: "HAZED OUT", src: "/images/balcony-pink.png" },
+  { id: 15, title: "PASSAGE", src: "/images/cloak-blue.png" },
+  { id: 16, title: "VACANT", src: "/images/hallway.png" },
+  { id: 17, title: "CHROME NIGHT", src: "/images/chrome-night.png" },
+  { id: 18, title: "DUSK", src: "/images/samurai.png" },
+  { id: 19, title: "PROTOCOL", src: "/images/protocol-d.png" },
+  { id: 20, title: "THE ROUTE", src: "/images/homestretch.png" },
+  { id: 21, title: "SPEAKEASY", src: "/images/speakeasy-b.png" },
 ];
 
 export function Gallery() {
