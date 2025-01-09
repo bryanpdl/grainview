@@ -1,13 +1,13 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 import { ImageModal } from './ImageModal';
 import { CustomCursor } from './CustomCursor';
 import { useState, useMemo, useEffect } from 'react';
 import { HiOutlineDownload, HiOutlineClipboard, HiOutlineCheck } from 'react-icons/hi';
-import { SmoothScroll } from './SmoothScroll';
+import { SmoothScroll, getLenis } from './SmoothScroll';
 
 type ArtPiece = {
   id: number;
@@ -31,14 +31,17 @@ const artPieces: ArtPiece[] = [
   { id: 11, title: "THE PLOT", src: "/images/subjects-face.png" },
   { id: 12, title: "DEEP", src: "/images/shark.png" },
   { id: 13, title: "EMBANKED", src: "/images/suv-snow.png" },
-  { id: 14, title: "HAZED OUT", src: "/images/balcony-pink.png" },
+  { id: 14, title: "SPEAKEASY", src: "/images/speakeasy-b.png" },
   { id: 15, title: "PASSAGE", src: "/images/cloak-blue.png" },
   { id: 16, title: "VACANT", src: "/images/hallway.png" },
   { id: 17, title: "CHROME NIGHT", src: "/images/chrome-night.png" },
   { id: 18, title: "DUSK", src: "/images/samurai.png" },
   { id: 19, title: "PROTOCOL", src: "/images/protocol-d.png" },
   { id: 20, title: "THE ROUTE", src: "/images/homestretch.png" },
-  { id: 21, title: "SPEAKEASY", src: "/images/speakeasy-b.png" },
+  { id: 21, title: "HAZED OUT", src: "/images/balcony-pink.png" },
+  { id: 22, title: "COASTAL", src: "/images/coastal-a.png" },
+  { id: 23, title: "LOW-LIT", src: "/images/lowlit.png" },
+  { id: 24, title: "TOMORROW", src: "/images/tomorrow.png" },
 ];
 
 export function Gallery() {
@@ -113,12 +116,35 @@ export function Gallery() {
     }
   };
 
+  const handleRatioChange = (ratio: AspectRatio) => {
+    setSelectedRatio(ratio);
+    const lenis = getLenis();
+    const header = document.querySelector('header');
+    if (lenis && header) {
+      const headerBottom = header.getBoundingClientRect().bottom + window.scrollY;
+      lenis.scrollTo(headerBottom, { 
+        duration: 1.5,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+      });
+    }
+  };
+
+  // Optimize scroll-based animations
+  const { scrollY } = useScroll();
+  const smoothY = useSpring(scrollY, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   return (
     <>
       <SmoothScroll />
       <style jsx global>{`
         * {
           cursor: ${isTouchDevice ? 'auto' : 'none !important'};
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
       `}</style>
       
@@ -134,7 +160,7 @@ export function Gallery() {
                 duration: 0.7,
                 ease: [0.23, 1, 0.32, 1]
               }}
-              className="text-display font-bold text-light-text dark:text-dark-text"
+              className="text-display font-bold text-light-text dark:text-dark-text will-change-transform"
             >
               GRAINVIEW
             </motion.h1>
@@ -146,7 +172,7 @@ export function Gallery() {
                 duration: 0.7,
                 ease: [0.23, 1, 0.32, 1]
               }}
-              className="text-lg md:text-xl font-medium text-light-text/40 dark:text-dark-text/40"
+              className="text-lg md:text-xl font-medium text-light-text/40 dark:text-dark-text/40 will-change-transform"
             >
               FILM-INSPIRED SHOTS, STABELY DIFFUSED AND CURATED TO REALITY.
             </motion.h2>
@@ -154,7 +180,7 @@ export function Gallery() {
         </header>
 
         <div className="sticky top-0 z-40 -mx-4 sm:-mx-6 lg:-mx-8 mb-12">
-          <div className="backdrop-blur-md bg-light-bg/90 dark:bg-dark-bg/90 px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center">
+          <div className="backdrop-blur-md bg-light-bg/90 dark:bg-dark-bg/90 px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center will-change-transform">
             <motion.div 
               className="flex gap-8"
               initial={{ opacity: 0, y: 20 }}
@@ -164,7 +190,7 @@ export function Gallery() {
               {(['all', '1:1', '4:3', '16:9'] as AspectRatio[]).map((ratio) => (
                 <button
                   key={ratio}
-                  onClick={() => setSelectedRatio(ratio)}
+                  onClick={() => handleRatioChange(ratio)}
                   className={`text-md font-bold transition-opacity duration-300
                     ${selectedRatio === ratio 
                       ? 'text-light-text dark:text-dark-text opacity-100' 
@@ -185,16 +211,16 @@ export function Gallery() {
               key={piece.id}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, margin: "-20%" }}
               transition={{ 
                 duration: 1,
-                delay: 0.35,
+                delay: 0.2,
                 ease: [0.23, 1, 0.32, 1]
               }}
-              className="relative"
+              className="relative will-change-transform"
             >
               <motion.div 
-                className="aspect-[16/9] relative overflow-hidden rounded-lg cursor-pointer"
+                className="aspect-[16/9] relative overflow-hidden rounded-lg cursor-pointer will-change-transform"
                 whileHover={{ scale: 1.02 }}
                 transition={{ 
                   duration: 1.2,
@@ -207,9 +233,12 @@ export function Gallery() {
                   src={piece.src}
                   alt={piece.title}
                   fill
-                  className="object-cover transition-all duration-[1.2s] ease-[cubic-bezier(0.33,1,0.68,1)] hover:scale-105"
+                  priority={index < 2}
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  className="object-cover transition-all duration-[1.2s] ease-[cubic-bezier(0.33,1,0.68,1)] hover:scale-105 will-change-transform"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
                   onLoad={(e) => handleImageLoad(piece.id, e.currentTarget)}
+                  quality={90}
                 />
               </motion.div>
               <div className="flex items-center justify-between mt-6">
@@ -241,13 +270,21 @@ export function Gallery() {
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCopy(piece);
+                      // Trigger animation immediately on click for touch devices
+                      setCopiedId(piece.id);
+                      setTimeout(() => setCopiedId(null), 2000);
                     }}
                     className="p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors"
                     aria-label="Copy image"
                   >
                     <motion.div
-                      animate={{ scale: copiedId === piece.id ? [1, 1.2, 1] : 1 }}
-                      transition={{ duration: 0.3 }}
+                      animate={{ 
+                        scale: copiedId === piece.id ? [1, 1.2, 1] : 1,
+                        transition: { 
+                          duration: 0.4,
+                          ease: [0.23, 1, 0.32, 1]
+                        }
+                      }}
                     >
                       {copiedId === piece.id ? (
                         <HiOutlineCheck size={20} className="text-green-500" />
