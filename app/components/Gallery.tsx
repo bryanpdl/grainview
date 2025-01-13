@@ -7,6 +7,7 @@ import { ImageModal } from './ImageModal';
 import { CustomCursor } from './CustomCursor';
 import { useState, useMemo, useEffect } from 'react';
 import { HiOutlineDownload, HiOutlineClipboard, HiOutlineCheck } from 'react-icons/hi';
+import { HiOutlineSquares2X2, HiOutlineBars3 } from 'react-icons/hi2';
 import { SmoothScroll, getLenis } from './SmoothScroll';
 
 type ArtPiece = {
@@ -42,6 +43,8 @@ const artPieces: ArtPiece[] = [
   { id: 22, title: "COASTAL", src: "/images/coastal-a.png" },
   { id: 23, title: "LOW-LIT", src: "/images/lowlit.png" },
   { id: 24, title: "TOMORROW", src: "/images/tomorrow.png" },
+  { id: 25, title: "SETTLEMENT", src: "/images/settlement.png" },
+  { id: 26, title: "FORAGING", src: "/images/forager.png" },
 ];
 
 export function Gallery() {
@@ -50,6 +53,18 @@ export function Gallery() {
   const [imageRatios, setImageRatios] = useState<Record<number, AspectRatio>>({});
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isGridView, setIsGridView] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
@@ -201,11 +216,27 @@ export function Gallery() {
                 </button>
               ))}
             </motion.div>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsGridView(!isGridView)}
+                className="p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors"
+                aria-label={isGridView ? "Switch to list view" : "Switch to grid view"}
+              >
+                {isGridView ? (
+                  <HiOutlineBars3 size={24} />
+                ) : (
+                  <HiOutlineSquares2X2 size={20} />
+                )}
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 gap-24 mb-24">
+        <div className={`${isGridView 
+          ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-8 mb-24' 
+          : 'grid grid-cols-1 gap-24 mb-24'}`}
+        >
           {filteredPieces.map((piece, index) => (
             <motion.article
               key={piece.id}
@@ -220,7 +251,9 @@ export function Gallery() {
               className="relative will-change-transform"
             >
               <motion.div 
-                className="aspect-[16/9] relative overflow-hidden rounded-lg cursor-pointer will-change-transform"
+                className={`relative overflow-hidden rounded-lg cursor-pointer will-change-transform ${
+                  isGridView ? 'aspect-square' : 'aspect-[16/9]'
+                }`}
                 whileHover={{ scale: 1.02 }}
                 transition={{ 
                   duration: 1.2,
@@ -235,76 +268,88 @@ export function Gallery() {
                   fill
                   priority={index < 2}
                   loading={index < 2 ? 'eager' : 'lazy'}
-                  className="object-cover transition-all duration-[1.2s] ease-[cubic-bezier(0.33,1,0.68,1)] hover:scale-105 will-change-transform"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                  className={`transition-all duration-[1.2s] ease-[cubic-bezier(0.33,1,0.68,1)] hover:scale-105 will-change-transform ${
+                    isGridView ? 'object-cover' : 'object-cover'
+                  }`}
+                  sizes={isGridView 
+                    ? "(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                    : "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1400px"
+                  }
                   onLoad={(e) => handleImageLoad(piece.id, e.currentTarget)}
                   quality={90}
                 />
               </motion.div>
-              <div className="flex items-center justify-between mt-6">
-                <motion.h2
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ 
-                    duration: 0.7,
-                    delay: 0.45,
-                    ease: [0.23, 1, 0.32, 1]
-                  }}
-                  className="text-3xl font-medium text-light-text dark:text-dark-text"
-                >
-                  {piece.title}
-                </motion.h2>
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ 
-                    duration: 0.7,
-                    delay: 0.45,
-                    ease: [0.23, 1, 0.32, 1]
-                  }}
-                  className="flex gap-4"
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopy(piece);
-                      // Trigger animation immediately on click for touch devices
-                      setCopiedId(piece.id);
-                      setTimeout(() => setCopiedId(null), 2000);
+              {(!isGridView || !isMobile) && (
+                <div className={`flex items-center justify-between ${isGridView ? 'mt-3' : 'mt-6'}`}>
+                  <motion.h2
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ 
+                      duration: 0.7,
+                      delay: 0.45,
+                      ease: [0.23, 1, 0.32, 1]
                     }}
-                    className="p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors"
-                    aria-label="Copy image"
+                    className={`font-medium text-light-text dark:text-dark-text ${
+                      isGridView ? 'text-lg' : 'text-3xl'
+                    }`}
                   >
-                    <motion.div
-                      animate={{ 
-                        scale: copiedId === piece.id ? [1, 1.2, 1] : 1,
-                        transition: { 
-                          duration: 0.4,
-                          ease: [0.23, 1, 0.32, 1]
-                        }
+                    {piece.title}
+                  </motion.h2>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ 
+                      duration: 0.7,
+                      delay: 0.45,
+                      ease: [0.23, 1, 0.32, 1]
+                    }}
+                    className="flex gap-2"
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy(piece);
+                        setCopiedId(piece.id);
+                        setTimeout(() => setCopiedId(null), 2000);
                       }}
+                      className={`p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors ${
+                        isGridView ? 'scale-90' : ''
+                      }`}
+                      aria-label="Copy image"
                     >
-                      {copiedId === piece.id ? (
-                        <HiOutlineCheck size={20} className="text-green-500" />
-                      ) : (
-                        <HiOutlineClipboard size={20} />
-                      )}
-                    </motion.div>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(piece);
-                    }}
-                    className="p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors"
-                    aria-label="Download image"
-                  >
-                    <HiOutlineDownload size={20} />
-                  </button>
-                </motion.div>
-              </div>
+                      <motion.div
+                        animate={{ 
+                          scale: copiedId === piece.id ? [1, 1.2, 1] : 1,
+                          transition: { 
+                            duration: 0.4,
+                            ease: [0.23, 1, 0.32, 1]
+                          }
+                        }}
+                      >
+                        {copiedId === piece.id ? (
+                          <HiOutlineCheck size={isGridView ? 16 : 20} className="text-green-500" />
+                        ) : (
+                          <HiOutlineClipboard size={isGridView ? 16 : 20} />
+                        )}
+                      </motion.div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(piece);
+                      }}
+                      className={`p-2 text-light-text/40 dark:text-dark-text/40 hover:text-light-text dark:hover:text-dark-text transition-colors ${
+                        isGridView ? 'scale-90' : ''
+                      }`}
+                      aria-label="Download image"
+                    >
+                      <HiOutlineDownload size={isGridView ? 16 : 20} />
+                    </button>
+                  </motion.div>
+                </div>
+              )}
             </motion.article>
           ))}
         </div>
